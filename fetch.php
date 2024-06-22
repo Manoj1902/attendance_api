@@ -5,7 +5,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// Database connection
+// Database connection--
 $CN = mysqli_connect("localhost", "root", "", "attendance");
 
 if (!$CN) {

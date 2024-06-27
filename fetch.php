@@ -12,6 +12,9 @@ if (!$CN) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
+// Server URL (modify this to your server URL)
+$server_url = 'http://192.168.137.1/uploads/';
+
 // SQL query to fetch all details from the 'employee' table
 $IQ = "SELECT * FROM employee";
 $R = mysqli_query($CN, $IQ);
@@ -20,6 +23,7 @@ $Response = array();
 
 // Fetch data from the database
 while ($Row = mysqli_fetch_assoc($R)) {
+    $Row['Image'] = $server_url . $Row['Image']; // Append the server URL to the image path
     $Response[] = $Row;
 }
 

@@ -1,38 +1,46 @@
 <?php
 
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // CORS headers
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
+header('Content-Type: application/json');
 
-$CN = mysqli_connect ("localhost", "root", "");
+$CN = mysqli_connect("localhost", "root", "");
 $DB = mysqli_select_db($CN, 'attendance');
 
 $EncodedData = file_get_contents('php://input');
 $DecodedData = json_decode($EncodedData, true);
 
-
-// $Name = $DecodedData['Name'];
-// $Mobile = $DecodedData['Mobile'];
-// $Password = $DecodedData['Password'];
-
 $Name = mysqli_real_escape_string($CN, $DecodedData['Name']);
 $Mobile = mysqli_real_escape_string($CN, $DecodedData['Mobile']);
+$Salary = mysqli_real_escape_string($CN, $DecodedData['Salary']);
 $Password = mysqli_real_escape_string($CN, $DecodedData['Password']);
+$Image = $DecodedData['Image'];
 
-$IQ = "insert into employee (Name, Mobile, Password) values ('$Name', '$Mobile', '$Password')";
+// Create the uploads directory if it doesn't exist
+$uploadDir = 'uploads/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
 
+// Convert image from Base64
+$ImagePath = $uploadDir . uniqid() . '.jpg';
+file_put_contents($ImagePath, base64_decode($Image));
+
+$IQ = "INSERT INTO employee (Name, Mobile, Salary, Image, Password) VALUES ('$Name', '$Mobile', '$Salary', '$ImagePath', '$Password')";
 
 $R = mysqli_query($CN, $IQ);
 
-if($R){
-    // $Message = "Employee has been Registered Successfully";
+if ($R) {
+    $SanitizedName = preg_replace('/[^a-zA-Z0-9_]/', '_', $Name);
 
- // Sanitize the employee name for use as a table name
- $SanitizedName = preg_replace('/[^a-zA-Z0-9_]/', '_', $Name);
-
-     // Create a new table for the employee
-     $EmployeeTable = "CREATE TABLE `" . $SanitizedName . "` (
+    $EmployeeTable = "CREATE TABLE `" . $SanitizedName . "` (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         attendance VARCHAR(10) NOT NULL,
@@ -42,12 +50,9 @@ if($R){
         image LONGBLOB NOT NULL
     )";
 
-    
-    
     if (mysqli_query($CN, $EmployeeTable)) {
-        // Insert the employee's name into the new table
         $InsertName = "INSERT INTO `" . $SanitizedName . "` (name, attendance, attendance_date, attendance_time, location, image) VALUES ('$SanitizedName', '', '', '', '', '')";
-        
+
         if (mysqli_query($CN, $InsertName)) {
             $Message = "Employee has been Registered Successfully and Table created.";
         } else {
@@ -56,14 +61,11 @@ if($R){
     } else {
         $Message = "Employee registered, but there was an error creating the table: " . mysqli_error($CN);
     }
-}
-else{
-    
-    $Message = "Server Error. Please try again";
+} else {
+    $Message = "Server Error. Please try again: " . mysqli_error($CN);
 }
 
-$Response[] = array("Message"=>$Message);
+$Response[] = array("Message" => $Message);
 echo json_encode($Response);
-
 
 ?>

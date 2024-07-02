@@ -24,7 +24,7 @@ $Response = array();
 // Fetch data from the database
 while ($Row = mysqli_fetch_assoc($R)) {
     // Only prepend the server URL if it's not already present
-    if (strpos($Row['Image'], $server_url) === false) {
+    if (strpos($Row['Image'], 'uploads/') !== false) {
         $Row['Image'] = $server_url . $Row['Image'];
     }
     $Response[] = $Row;

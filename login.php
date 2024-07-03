@@ -24,6 +24,9 @@ $Table = mysqli_query($CN, $SQ);
 if (mysqli_num_rows($Table) > 0) {
     $Message = "Login Successful";
     $Status = true;
+
+    
+
 } else {
     $Message = "Invalid Mobile or Password";
     $Status = false;

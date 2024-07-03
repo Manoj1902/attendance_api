@@ -22,6 +22,7 @@ if ($DecodedData) {
     $Salary = mysqli_real_escape_string($CN, $DecodedData['Salary']);
     $Password = mysqli_real_escape_string($CN, $DecodedData['Password']);
     $Image = $DecodedData['Image'];
+    
 
     // Create the uploads directory if it doesn't exist
     $uploadDir = 'uploads/';
@@ -51,16 +52,18 @@ if ($DecodedData) {
         $EmployeeTable = "CREATE TABLE `" . $SanitizedName . "` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
+            mobile VARCHAR(50) NOT NULL,
             attendance VARCHAR(10) NOT NULL,
             attendance_date DATE NOT NULL,
             attendance_time TIME NOT NULL,
             location VARCHAR(255) NOT NULL,
             image LONGBLOB NOT NULL
         )";
-
+        // $Mobile1 = mysqli_real_escape_string($CN, $DecodedData['Mobile']);
         if (mysqli_query($CN, $EmployeeTable)) {
             // Insert a default record into the personal attendance table
-            $InsertName = "INSERT INTO `" . $SanitizedName . "` (name, attendance, attendance_date, attendance_time, location, image) VALUES ('$SanitizedName', '', '', '', '', '')";
+            
+            $InsertName = "INSERT INTO `" . $SanitizedName . "` (name, mobile, attendance, attendance_date, attendance_time, location, image) VALUES ('$SanitizedName', '$Mobile', '', '', '', '', '')";
 
             if (mysqli_query($CN, $InsertName)) {
                 $Message = "Employee has been Registered Successfully and Table created.";

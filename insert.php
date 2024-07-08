@@ -23,7 +23,6 @@ if ($DecodedData) {
     $Password = mysqli_real_escape_string($CN, $DecodedData['Password']);
     $Image = $DecodedData['Image'];
     
-
     // Create the uploads directory if it doesn't exist
     $uploadDir = 'uploads/';
     if (!is_dir($uploadDir)) {
@@ -45,34 +44,7 @@ if ($DecodedData) {
     $R = mysqli_query($CN, $IQ);
 
     if ($R) {
-        // Sanitize name for use in table creation
-        $SanitizedName = preg_replace('/[^a-zA-Z0-9_]/', '_', $Name);
-
-        // Create a personal attendance table for the new employee
-        $EmployeeTable = "CREATE TABLE `" . $SanitizedName . "` (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            mobile VARCHAR(50) NOT NULL,
-            attendance VARCHAR(10) NOT NULL,
-            attendance_date DATE NOT NULL,
-            attendance_time TIME NOT NULL,
-            location VARCHAR(255) NOT NULL,
-            image LONGBLOB NOT NULL
-        )";
-        // $Mobile1 = mysqli_real_escape_string($CN, $DecodedData['Mobile']);
-        if (mysqli_query($CN, $EmployeeTable)) {
-            // Insert a default record into the personal attendance table
-            
-            $InsertName = "INSERT INTO `" . $SanitizedName . "` (name, mobile, attendance, attendance_date, attendance_time, location, image) VALUES ('$SanitizedName', '$Mobile', '', '', '', '', '')";
-
-            if (mysqli_query($CN, $InsertName)) {
-                $Message = "Employee has been Registered Successfully and Table created.";
-            } else {
-                $Message = "Employee registered and table created, but there was an error inserting the name: " . mysqli_error($CN);
-            }
-        } else {
-            $Message = "Employee registered, but there was an error creating the table: " . mysqli_error($CN);
-        }
+        $Message = "Employee has been registered successfully.";
     } else {
         $Message = "Server Error. Please try again: " . mysqli_error($CN);
     }

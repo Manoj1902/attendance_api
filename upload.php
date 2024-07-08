@@ -1,47 +1,34 @@
 <?php
+$servername = "localhost";
+$username = "root"; // your MySQL username
+$password = ""; // your MySQL password
+$dbname = "attendance";
 
-// CORS headers
-header("Access-Control-Allow-Origin: *"); // Replace with your domain or '*'
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type");
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-$CN = mysqli_connect("localhost", "root", "", "attendance");
-
-if (!$CN) {
-    die("Connection failed: " . mysqli_connect_error());
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $image = $_FILES['image']['tmp_name'];
-    $imgContent = addslashes(file_get_contents($image));
-    $attendance = $_POST['attendance'];
-    $date = $_POST['attendance_date'];
-    $time = $_POST['attendance_time'];
-    $location = $_POST['location'];
-    $employeeName = $_POST['name'];  // Get the employee name
-    $employeeMobile = $_POST['mobile'];  // Get the employee mobile number
+$name = $_POST['name'];
+$mobile = $_POST['mobile'];
+$attendance = $_POST['attendance'];
+$attendance_date = $_POST['attendance_date'];
+$attendance_time = $_POST['attendance_time'];
+$location = $_POST['location'];
 
-    // Sanitize the table name to avoid SQL injection
-    $SanitizedName = preg_replace('/[^a-zA-Z0-9_]/', '_', $employeeName);
+$image = $_FILES['image']['name'];
+$target_dir = "uploads/";
+$target_file = $target_dir . basename($image);
+move_uploaded_file($_FILES["image"]["tmp_name"], $target_file);
 
-    // Fetch the employee details from the employee's table
-    $employeeQuery = "SELECT * FROM `$SanitizedName` WHERE mobile='$employeeMobile'";
-    $employeeResult = mysqli_query($CN, $employeeQuery);
+$sql = "INSERT INTO uploads (Name, Mobile, attendance, Attendance_date, Attendance_time, Location, Image) VALUES ('$name', '$mobile', '$attendance', '$attendance_date', '$attendance_time', '$location', '$target_file')";
 
-    if ($employeeResult && mysqli_num_rows($employeeResult) > 0) {
-        // Insert attendance details into the employee's table
-        $insertQuery = "INSERT INTO `$SanitizedName` (attendance, attendance_date, attendance_time, location, image) VALUES ('present', '$date', '$time', '$location', '$imgContent')";
-        
-        if (mysqli_query($CN, $insertQuery)) {
-            echo json_encode(["message" => "Attendance recorded successfully"]);
-        } else {
-            echo json_encode(["message" => "Failed to record attendance"]);
-        }
-    } else {
-        echo json_encode(["message" => "Employee not found"]);
-    }
+if ($conn->query($sql) === TRUE) {
+    echo json_encode(array("status" => "success", "message" => "Attendance recorded successfully"));
+} else {
+    echo json_encode(array("status" => "error", "message" => "Error: " . $sql . "<br>" . $conn->error));
 }
 
-mysqli_close($CN);
-
+$conn->close();
 ?>

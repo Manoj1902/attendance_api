@@ -1,40 +1,48 @@
 <?php
 
+// Enable error reporting
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // CORS headers
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Methods: GET, POST");
 header("Access-Control-Allow-Headers: Content-Type");
+header('Content-Type: application/json');
 
-$CN = mysqli_connect("localhost", "root", "", "attendance");
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "attendance";
 
-if (!$CN) {
-    die("Connection failed: " . mysqli_connect_error());
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-$EncodedData = file_get_contents('php://input');
-$DecodedData = json_decode($EncodedData, true);
+// Get the raw POST data
+$post_data = file_get_contents("php://input");
+$request = json_decode($post_data, true);
 
-$Mobile = $DecodedData['Mobile'];
-$Password = $DecodedData['Password'];
+$mobile = $request['mobile'];
+$password = $request['password'];
 
-$SQ = "SELECT * FROM employee WHERE Mobile='$Mobile' AND Password='$Password'";
+error_log("Received login request for mobile: $mobile");
 
-$Table = mysqli_query($CN, $SQ);
+// Query to check credentials
+$sql = "SELECT * FROM employee WHERE Mobile='$mobile' AND Password='$password'";
+$result = $conn->query($sql);
 
-if (mysqli_num_rows($Table) > 0) {
-    $Message = "Login Successful";
-    $Status = true;
-
-    
-
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    echo json_encode(array("status" => "success", "employee" => $row));
 } else {
-    $Message = "Invalid Mobile or Password";
-    $Status = false;
+    echo json_encode(array("status" => "error", "message" => "Invalid credentials"));
 }
 
-$Response = array("Message" => $Message, "Status" => $Status);
-echo json_encode($Response);
-
-mysqli_close($CN);
-
+$conn->close();
 ?>

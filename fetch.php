@@ -15,6 +15,9 @@ if (!$CN) {
 // Server URL (modify this to your server URL)
 $server_url = 'http://192.168.137.1/api/';
 
+$month = isset($_GET['month']) ? $_GET['month'] : date('m');
+$year = isset($_GET['year']) ? $_GET['year'] : date('Y');
+
 // SQL query to fetch all details from the 'employee' table
 $IQ = "SELECT * FROM employee";
 $R = mysqli_query($CN, $IQ);
@@ -27,6 +30,18 @@ while ($Row = mysqli_fetch_assoc($R)) {
     if (strpos($Row['Image'], 'uploads/') !== false) {
         $Row['Image'] = $server_url . $Row['Image'];
     }
+
+    // Fetch attendance details for the employee for the specified month and year
+    $Mobile = $Row['Mobile'];
+    $attendanceQuery = "SELECT * FROM uploads WHERE Mobile = '$Mobile' AND MONTH(Attendance_date) = '$month' AND YEAR(Attendance_date) = '$year' ORDER BY Attendance_date DESC";
+    $attendanceResult = mysqli_query($CN, $attendanceQuery);
+
+    $attendanceDetails = array();
+    while ($attendanceRow = mysqli_fetch_assoc($attendanceResult)) {
+        $attendanceDetails[] = $attendanceRow;
+    }
+
+    $Row['AttendanceDetails'] = $attendanceDetails;
     $Response[] = $Row;
 }
 
